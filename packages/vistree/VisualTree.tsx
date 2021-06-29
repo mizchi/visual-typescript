@@ -886,7 +886,8 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.VariableDeclarationList;
       let declType;
       // TODO: Why 10?
-      if (t.flags === ts.NodeFlags.Const || t.flags === 10) declType = "const";
+      console.log("t.flags", t.flags);
+      if (t.flags === ts.NodeFlags.Const) declType = "const";
       else if (t.flags === ts.NodeFlags.Let) declType = "let";
       else declType = "var";
 

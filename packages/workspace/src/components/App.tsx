@@ -1,15 +1,15 @@
 import React, { Suspense, useCallback, useState } from "react";
 import ts from "typescript";
 import type * as monaco from "monaco-editor";
-import { astToCode } from "../worker/typescript.worker";
+import { sourceToCode } from "../worker/typescript.worker";
 import { format } from "../worker/prettier.worker";
 import { Scrollable, HeaderContainer, Root, ContentContainer } from "./layout";
 import { TEMPLATES } from "../data";
 // import { Button } from "@material-ui/core";
-import { parseCode, replaceNode, updateSource } from "@mizchi/vistree/src";
-import { VisualEditableTree } from "@mizchi/vistree-editable/src";
+import { parseCode, replaceNode, updateSource } from "vistree";
+import { EditableTree, VisualTree } from "vistree";
 
-const MonacoEditor = React.lazy(() => import("./MonacoEditor"));
+// const MonacoEditor = React.lazy(() => import("./MonacoEditor"));
 
 enum EditMode {
   CodeAndVisual = "code-and-visual",
@@ -20,6 +20,7 @@ enum EditMode {
 // @ts-ignore
 const initialCode = TEMPLATES[Object.keys(TEMPLATES)[0]];
 const initialAst = parseCode(initialCode);
+
 export function App() {
   const [mode, setMode] = useState<EditMode>(EditMode.CodeAndVisual);
   const [code, setCode] = useState<string>(initialCode);
@@ -57,10 +58,10 @@ export function App() {
     async (prev: ts.Node, next: ts.Node) => {
       const newAst = replaceNode(ast, prev, next);
       setAst(newAst);
-
       const newCode = await printCodeWithFormat(newAst);
       setCode(newCode);
       setCheckpointCode(newCode);
+      console.log(newCode);
     },
     [ast, mode]
   );
@@ -110,37 +111,25 @@ export function App() {
             flexDirection: "row",
           }}
         >
-          {[EditMode.Code, EditMode.CodeAndVisual].includes(mode) && (
-            <div style={{ flex: 1, maxWidth: "100%", height: "100%" }}>
-              <Suspense fallback="loading...">
-                <MonacoEditor
-                  initialCode={checkpointCode}
-                  onChange={onChangeCode}
-                  onInit={onInit}
+          <div
+            style={{
+              flex: 1,
+              maxWidth: "100%",
+              height: "100%",
+              position: "relative",
+            }}
+          >
+            <Scrollable>
+              <div style={{ padding: 3 }}>
+                {/* <VisualTree ast={ast} /> */}
+                <EditableTree
+                  ast={ast}
+                  onChangeNode={onChangeNode}
+                  onUpdateSource={onUpdateSource}
                 />
-              </Suspense>
-            </div>
-          )}
-          {[EditMode.Visual, EditMode.CodeAndVisual].includes(mode) && (
-            <div
-              style={{
-                flex: 1,
-                maxWidth: "100%",
-                height: "100%",
-                position: "relative",
-              }}
-            >
-              <Scrollable>
-                <div style={{ padding: 3 }}>
-                  <VisualEditableTree
-                    ast={ast}
-                    onChangeNode={onChangeNode}
-                    onUpdateSource={onUpdateSource}
-                  />
-                </div>
-              </Scrollable>
-            </div>
-          )}
+              </div>
+            </Scrollable>
+          </div>
         </div>
       </ContentContainer>
     </Root>
@@ -206,7 +195,7 @@ function Header(props: {
 }
 
 async function printCodeWithFormat(ast: ts.SourceFile) {
-  const newCode = await astToCode(ast);
+  const newCode = await sourceToCode(ast);
   const newCodeFormatted = await format(newCode);
   return newCodeFormatted;
 }

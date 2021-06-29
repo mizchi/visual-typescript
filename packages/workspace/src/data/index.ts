@@ -1,7 +1,7 @@
-import tree from "!!raw-loader!@mizchi/vistree/src/VisualTree.tsx";
-import helloworld from "!!raw-loader!./helloworld.ts";
+// import tree from "!!raw-loader!@mizchi/vistree/src/VisualTree.tsx";
+import { helloworld } from "./helloworld";
 
 export const TEMPLATES = {
   "helloworld.ts": helloworld,
-  "tree.tsx": tree,
+  // "tree.tsx": tree,
 };

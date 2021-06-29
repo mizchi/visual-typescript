@@ -1,7 +1,6 @@
 import React, { useState, useCallback, Context } from "react";
 import ts from "typescript";
 import styled from "styled-components";
-import MonacoEditor from "react-monaco-editor";
 
 import {
   VisualTree,
@@ -9,7 +8,7 @@ import {
   useRendererContext,
   Keyword,
   IndentBlock,
-} from "@mizchi/vistree/src";
+} from "./VisualTree";
 
 type EditableContext = {
   onChangeNode: (prev: ts.Node, next: ts.Node) => void;
