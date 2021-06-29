@@ -2,24 +2,26 @@ import React, { useContext } from "react";
 import ts from "typescript";
 import styled from "styled-components";
 
-export type RendererTreeOptions<T = void> = {
+export type RendererContext<T = void> = {
   root: ts.SourceFile;
   renderer: React.ComponentType<{ tree: ts.Node }>;
   context: T;
 };
 
-const RendererContext = React.createContext<RendererTreeOptions<any>>(
-  null as any
-);
+export type VisualTreeProps<T = void> = Omit<RendererContext<T>, "renderer"> & {
+  renderer?: React.ComponentType<{ tree: ts.Node }>;
+};
 
-export function useRendererContext<T>(): RendererTreeOptions<T> {
+const RendererContext = React.createContext<RendererContext<any>>(null as any);
+
+export function useRendererContext<T>(): RendererContext<T> {
   return useContext(RendererContext);
 }
 
-export function VisualTree<T>(props: RendererTreeOptions<T>) {
-  const Renderer = props.renderer;
+export function VisualTree<T>(props: VisualTreeProps<T>) {
+  const Renderer = props.renderer ?? CodeRenderer;
   return (
-    <RendererContext.Provider value={props}>
+    <RendererContext.Provider value={{ ...props, renderer: Renderer }}>
       <Container>
         <Renderer tree={props.root} />
       </Container>
@@ -886,8 +888,10 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.VariableDeclarationList;
       let declType;
       // TODO: Why 10?
-      console.log("t.flags", t.flags);
-      if (t.flags === ts.NodeFlags.Const) declType = "const";
+      // console.log("t.flags", t.flags);
+      // t.flags
+      // ts.NodeFlags.
+      if (t.flags === ts.NodeFlags.Const || t.flags === 10) declType = "const";
       else if (t.flags === ts.NodeFlags.Let) declType = "let";
       else declType = "var";
 

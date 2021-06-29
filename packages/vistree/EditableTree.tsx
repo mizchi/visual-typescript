@@ -94,7 +94,6 @@ function EditableRenderer({ tree }: { tree: ts.Node }) {
         </div>
       );
     }
-
     case ts.SyntaxKind.StringLiteral: {
       return (
         <EditableStringLiteral
@@ -196,7 +195,7 @@ function EditableNoSubstitutionTemplateLiteral({
             // newNode.text = value;
             onChangeNode(
               templateLiteral,
-              ts.createNoSubstitutionTemplateLiteral(value)
+              ts.factory.createNoSubstitutionTemplateLiteral(value)
             );
           }}
         />
@@ -258,8 +257,10 @@ function EditableNumericLiteral({
           ev.target.style.width = `${
             getLiteralWidth(numericLiteral.text.length) + 16
           }px`;
-          const newNode = ts.getMutableClone(numericLiteral);
-          newNode.text = value.toString();
+          // const newNode = ts.factory(numericLiteral);
+          // const newNode = ts.factory.getMutableClone(numericLiteral);
+          const newNode = ts.factory.createNumericLiteral(value);
+          // newNode.text = value.toString();
           onChangeNode(numericLiteral, newNode);
         }}
       />
@@ -310,7 +311,9 @@ function EditableBooleanLiteral({
           const value = ev.target.value as "true" | "false";
           onChangeNode(
             booleanLiteral,
-            value === "true" ? ts.createTrue() : ts.createFalse()
+            value === "true"
+              ? ts.factory.createTrue()
+              : ts.factory.createFalse()
           );
         }}
       >
@@ -354,7 +357,7 @@ function EditableBlock({
       <AppendStatementsToolbar
         onAppend={(stmts) => {
           const newStmts = block.statements.concat(stmts);
-          onChangeNode(block, ts.createBlock(newStmts));
+          onChangeNode(block, ts.factory.createBlock(newStmts));
         }}
       />
     </>
@@ -370,6 +373,7 @@ function AppendStatementsToolbar({
   const append = useCallback(
     (code: string) => {
       if (code.length > 0) {
+        // ts.factory.createSource
         const ret = ts.createSourceFile(
           "file:///__expr__.ts",
           code,
@@ -456,15 +460,15 @@ function BooleanExpectedNode({ tree }: { tree: ts.Expression }) {
       // setNodeType(ev.target.value as BooleanExpectedNodeType);
       switch (newNodeType) {
         case BooleanExpectedNodeType.Boolean: {
-          return context.onChangeNode(tree, ts.createTrue());
+          return context.onChangeNode(tree, ts.factory.createTrue());
         }
         case BooleanExpectedNodeType.BinaryExpression: {
           return context.onChangeNode(
             tree,
-            ts.createBinary(
-              ts.createNumericLiteral(1),
+            ts.factory.createBinaryExpression(
+              ts.factory.createNumericLiteral(1),
               ts.SyntaxKind.GreaterThanToken,
-              ts.createNumericLiteral(0)
+              ts.factory.createNumericLiteral(0)
             )
           );
         }
