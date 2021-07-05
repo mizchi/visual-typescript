@@ -10,6 +10,10 @@ export type RendererContext<T = void> = {
     index: number;
     children: React.ReactNode;
   }>;
+  // replacers: Array<{
+  //   kind: ts.SyntaxKind;
+  //   renderer: React.ComponentType<{ node: ts.Node }>;
+  // }>;
   expression: React.ComponentType<{
     tree: ts.Expression;
     children: React.ReactNode;
@@ -38,13 +42,34 @@ export function VisualTree<T>(props: VisualTreeProps<T>) {
   );
 }
 
+export function LiteralRenderer({ node }: { node: ts.LiteralExpression }) {
+  return <>literal</>;
+}
+
+// export function ExpressionRenderer({ node }: { node: ts.Expression }) {
+//   if (ts.isLiteralExpression(node)) {
+//     return <LiteralRenderer node={node} />;
+//   }
+//   return <>expr</>;
+// }
+
 export function CodeRenderer({ tree }: { tree: ts.Node }) {
   const {
-    renderer: Tree,
+    renderer: Renderer,
     statement: Stmt,
     expression: Expr,
   } = useContext(RendererContext);
+  debugger;
   // ts.each
+  if (ts.isLiteralExpression(tree)) {
+    return <LiteralRenderer node={tree} />;
+  }
+  // if (ts.isExpression(tree)) {
+  //   return <LiteralRenderer node={tree} />;
+  // }
+
+  // if (ts.isExpression(tree)) {
+  // }
   switch (tree.kind) {
     // Root
     case ts.SyntaxKind.SourceFile: {
@@ -53,7 +78,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
         <>
           {t.statements.map((stmt, idx) => (
             <Stmt tree={stmt} index={idx} key={idx}>
-              <Tree tree={stmt} />
+              <Renderer tree={stmt} />
             </Stmt>
           ))}
         </>
@@ -66,7 +91,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
         <>
           {t.statements.map((stmt, idx) => (
             <Stmt tree={stmt} index={idx} key={idx}>
-              <Tree tree={stmt} />
+              <Renderer tree={stmt} />
             </Stmt>
           ))}
         </>
@@ -89,17 +114,17 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       return (
         <>
           {t.modifiers && <Modifiers modifiers={t.modifiers} />}
-          <Tree tree={t.name} />
+          <Renderer tree={t.name} />
           {t.type && (
             <>
               :&nbsp;
-              <Tree tree={t.type} />
+              <Renderer tree={t.type} />
             </>
           )}
           {t.initializer && (
             <>
               &nbsp;=&nbsp;
-              <Tree tree={t.initializer} />
+              <Renderer tree={t.initializer} />
             </>
           )}
           ;
@@ -111,7 +136,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       return (
         <>
           {t.modifiers && <Modifiers modifiers={t.modifiers} />}
-          <Tree tree={t.name} />
+          <Renderer tree={t.name} />
           {t.typeParameters && (
             <TypeParameters typeParameters={t.typeParameters} />
           )}
@@ -119,7 +144,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
           {t.parameters.map((p, i) => {
             return (
               <span key={i}>
-                <Tree tree={p} key={i} />
+                <Renderer tree={p} key={i} />
                 {i !== t.parameters.length - 1 && ", "}
               </span>
             );
@@ -127,7 +152,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
           ) {"{"}
           {t.body && (
             <IndentBlock>
-              <Tree tree={t.body} />
+              <Renderer tree={t.body} />
             </IndentBlock>
           )}
           {"}"}
@@ -138,11 +163,11 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.BindingElement;
       return (
         <span>
-          <Tree tree={t.name} />
+          <Renderer tree={t.name} />
           {t.propertyName && (
             <>
               :&nbsp;
-              <Tree tree={t.propertyName} />
+              <Renderer tree={t.propertyName} />
             </>
           )}
         </span>
@@ -157,7 +182,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
             const last = idx === t.elements.length - 1;
             return (
               <span key={idx}>
-                <Tree tree={el} />
+                <Renderer tree={el} />
                 {!last && ", "}
               </span>
             );
@@ -175,7 +200,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
             const last = idx === t.elements.length - 1;
             return (
               <span key={idx}>
-                <Tree tree={el} />
+                <Renderer tree={el} />
                 {!last && ", "}
               </span>
             );
@@ -197,16 +222,16 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
               if (p.kind === ts.SyntaxKind.PropertyAssignment) {
                 return (
                   <div key={idx}>
-                    <Tree tree={p.name} />
+                    <Renderer tree={p.name} />
                     :&nbsp;
-                    <Tree tree={p.initializer} />
+                    <Renderer tree={p.initializer} />
                     {!isLast && ", "}
                   </div>
                 );
               } else if (p.kind === ts.SyntaxKind.ShorthandPropertyAssignment) {
                 return (
                   <div key={idx}>
-                    <Tree tree={p.name!} />
+                    <Renderer tree={p.name!} />
                     {!isLast && ", "}
                   </div>
                 );
@@ -214,7 +239,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
                 const m = p as ts.MethodDeclaration;
                 return (
                   <div key={idx}>
-                    <Tree tree={m} />
+                    <Renderer tree={m} />
                     {!isLast && ", "}
                   </div>
                 );
@@ -362,7 +387,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
             const isLastArg = idx === t.elements.length - 1;
             return (
               <span key={idx}>
-                <Tree tree={e} key={idx} />
+                <Renderer tree={e} key={idx} />
                 {!isLastArg && ", "}
               </span>
             );
@@ -375,11 +400,11 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.ConditionalExpression;
       return (
         <>
-          <Tree tree={t.condition} />
+          <Renderer tree={t.condition} />
           {"?"}
-          <Tree tree={t.whenTrue} />
+          <Renderer tree={t.whenTrue} />
           {":"}
-          <Tree tree={t.whenFalse} />
+          <Renderer tree={t.whenFalse} />
         </>
       );
     }
@@ -387,7 +412,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.ParenthesizedExpression;
       return (
         <span>
-          (<Tree tree={t.expression} />)
+          (<Renderer tree={t.expression} />)
         </span>
       );
     }
@@ -411,7 +436,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
             return (
               <span key={idx}>
                 {"${"}
-                <Tree tree={span.expression} />
+                <Renderer tree={span.expression} />
                 {"$}"}
                 {span.literal.text}
               </span>
@@ -425,8 +450,8 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.TaggedTemplateExpression;
       return (
         <span>
-          <Tree tree={t.tag} />
-          <Tree tree={t.template} />
+          <Renderer tree={t.tag} />
+          <Renderer tree={t.template} />
         </span>
       );
     }
@@ -436,7 +461,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
         <span>
           <Keyword>new</Keyword>
           &nbsp;
-          <Tree tree={t.expression} />(
+          <Renderer tree={t.expression} />(
           {t.arguments && <Arguments arguments={t.arguments} />})
         </span>
       );
@@ -445,9 +470,9 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.ElementAccessExpression;
       return (
         <span>
-          <Tree tree={t.expression} />
+          <Renderer tree={t.expression} />
           {t.questionDotToken && <>?.</>}
-          [<Tree tree={t.argumentExpression} />]
+          [<Renderer tree={t.argumentExpression} />]
         </span>
       );
     }
@@ -455,7 +480,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.NonNullExpression;
       return (
         <span>
-          <Tree tree={t.expression} />!
+          <Renderer tree={t.expression} />!
         </span>
       );
     }
@@ -473,7 +498,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       return (
         <span>
           {token}
-          <Tree tree={t.operand} />
+          <Renderer tree={t.operand} />
         </span>
       );
     }
@@ -487,7 +512,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       }
       return (
         <span>
-          <Tree tree={t.operand} />
+          <Renderer tree={t.operand} />
           {token}
         </span>
       );
@@ -496,11 +521,11 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.AsExpression;
       return (
         <span>
-          <Tree tree={t.expression} />
+          <Renderer tree={t.expression} />
           &nbsp;
           <Keyword>as</Keyword>
           &nbsp;
-          <Tree tree={t.type} />
+          <Renderer tree={t.type} />
         </span>
       );
     }
@@ -518,7 +543,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
             {t.children.map((c, idx) => {
               return (
                 <div key={idx}>
-                  <Tree tree={c} />
+                  <Renderer tree={c} />
                 </div>
               );
             })}
@@ -532,7 +557,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       return (
         <>
           {"{"}
-          {t.expression && <Tree tree={t.expression} />}
+          {t.expression && <Renderer tree={t.expression} />}
           {"} "}
         </>
       );
@@ -542,17 +567,17 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       return (
         <span>
           {"<"}
-          <Tree tree={t.tagName} />
+          <Renderer tree={t.tagName} />
           &nbsp;
           {t.attributes.properties.map((attr, idx) => {
             if (attr.kind === ts.SyntaxKind.JsxAttribute) {
               const tt = attr as ts.JsxAttribute;
               return (
                 <span key={idx}>
-                  {tt.name && <Tree tree={tt.name} />}
+                  {tt.name && <Renderer tree={tt.name} />}
                   {tt.initializer && (
                     <>
-                      =<Tree tree={tt.initializer} />
+                      =<Renderer tree={tt.initializer} />
                     </>
                   )}
                 </span>
@@ -562,7 +587,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
               return (
                 <span key={idx}>
                   {"{..."}
-                  <Tree tree={tt.expression} />
+                  <Renderer tree={tt.expression} />
                 </span>
               );
             }
@@ -576,17 +601,17 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       return (
         <>
           {"<"}
-          <Tree tree={t.tagName} />
+          <Renderer tree={t.tagName} />
           {t.attributes.properties.map((attr, idx) => {
             if (attr.kind === ts.SyntaxKind.JsxAttribute) {
               const tt = attr as ts.JsxAttribute;
               return (
                 <span key={idx}>
                   &nbsp;
-                  {tt.name && <Tree tree={tt.name} />}
+                  {tt.name && <Renderer tree={tt.name} />}
                   {tt.initializer && (
                     <>
-                      =<Tree tree={tt.initializer} />
+                      =<Renderer tree={tt.initializer} />
                     </>
                   )}
                 </span>
@@ -597,7 +622,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
                 <span key={idx}>
                   &nbsp;
                   {"{..."}
-                  <Tree tree={tt.expression} />
+                  <Renderer tree={tt.expression} />
                 </span>
               );
             }
@@ -611,7 +636,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       return (
         <>
           {"</"}
-          <Tree tree={t.tagName} />
+          <Renderer tree={t.tagName} />
           {">"}
         </>
       );
@@ -621,17 +646,17 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       return (
         <span>
           <IndentBlock>
-            <Tree tree={t.openingElement} />
+            <Renderer tree={t.openingElement} />
             <IndentBlock>
               {t.children.map((c, idx) => {
                 return (
                   <div key={idx}>
-                    <Tree tree={c} />{" "}
+                    <Renderer tree={c} />{" "}
                   </div>
                 );
               })}
             </IndentBlock>
-            <Tree tree={t.closingElement} />
+            <Renderer tree={t.closingElement} />
           </IndentBlock>
         </span>
       );
@@ -640,11 +665,11 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.BinaryExpression;
       return (
         <span>
-          <Tree tree={t.left} />
+          <Renderer tree={t.left} />
           &nbsp;
-          <Tree tree={t.operatorToken} />
+          <Renderer tree={t.operatorToken} />
           &nbsp;
-          <Tree tree={t.right} />
+          <Renderer tree={t.right} />
         </span>
       );
     }
@@ -652,9 +677,9 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.PropertyAccessExpression;
       return (
         <span>
-          <Tree tree={t.expression} />
+          <Renderer tree={t.expression} />
           {t.questionDotToken ? "?." : "."}
-          <Tree tree={t.name} />
+          <Renderer tree={t.name} />
         </span>
       );
     }
@@ -662,7 +687,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.CallExpression;
       return (
         <span>
-          <Tree tree={t.expression} />(
+          <Renderer tree={t.expression} />(
           {t.arguments.length > 0 && (
             <IndentBlock>
               <Arguments arguments={t.arguments} />
@@ -694,7 +719,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.ExpressionStatement;
       return (
         <div>
-          <Tree tree={t.expression} />;
+          <Renderer tree={t.expression} />;
         </div>
       );
     }
@@ -704,14 +729,14 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
         <>
           {t.propertyName ? (
             <>
-              <Tree tree={t.propertyName} />
+              <Renderer tree={t.propertyName} />
               &nbsp;
               <Keyword>as</Keyword>
               &nbsp;
-              <Tree tree={t.name} />
+              <Renderer tree={t.name} />
             </>
           ) : (
-            <Tree tree={t.name} />
+            <Renderer tree={t.name} />
           )}
         </>
       );
@@ -725,7 +750,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
               <Keyword>type</Keyword>&nbsp;
             </>
           )}
-          {t.name && <Tree tree={t.name} />}
+          {t.name && <Renderer tree={t.name} />}
           {t.namedBindings?.kind === ts.SyntaxKind.NamespaceImport && (
             <>
               <Keyword>{"*"}</Keyword>
@@ -734,7 +759,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
                   &nbsp;
                   <Keyword>as</Keyword>
                   &nbsp;
-                  <Tree tree={t.namedBindings.name} />
+                  <Renderer tree={t.namedBindings.name} />
                 </>
               )}
             </>
@@ -750,7 +775,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
                     (t.namedBindings as ts.NamedImports).elements.length - 1;
                   return (
                     <span key={idx}>
-                      <Tree tree={bind} />
+                      <Renderer tree={bind} />
                       {!last && <>, </>}
                     </span>
                   );
@@ -766,7 +791,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.ExpressionWithTypeArguments;
       return (
         <>
-          <Tree tree={t.expression} />
+          <Renderer tree={t.expression} />
           {t.typeArguments && <TypeArguments typeArguments={t.typeArguments} />}
         </>
       );
@@ -787,7 +812,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
             const last = idx === t.types!.length - 1;
             return (
               <span key={idx}>
-                <Tree tree={tt} />
+                <Renderer tree={tt} />
                 {!last && <>, </>}
               </span>
             );
@@ -799,7 +824,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as unknown as any;
       return (
         <>
-          <Tree tree={t.name} />
+          <Renderer tree={t.name} />
         </>
       );
     }
@@ -811,7 +836,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
           {t.modifiers && <Modifiers modifiers={t.modifiers} />}
           <Keyword>interface</Keyword>
           &nbsp;
-          <Tree tree={t.name} />
+          <Renderer tree={t.name} />
           {t.typeParameters && (
             <TypeParameters typeParameters={t.typeParameters} />
           )}
@@ -821,7 +846,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
                 const last: boolean = idx === t.heritageClauses!.length - 1;
                 return (
                   <div key={idx}>
-                    <Tree tree={h} />
+                    <Renderer tree={h} />
                     {!last && <>;</>}
                   </div>
                 );
@@ -833,7 +858,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
             {t.members.map((m, idx) => {
               return (
                 <div key={idx}>
-                  <Tree tree={m} />;
+                  <Renderer tree={m} />;
                 </div>
               );
             })}
@@ -850,7 +875,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
           &nbsp;
           <Keyword>default</Keyword>
           &nbsp;
-          <Tree tree={t.expression} />;
+          <Renderer tree={t.expression} />;
         </div>
       );
     }
@@ -862,13 +887,13 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
           {t.importClause && (
             <>
               &nbsp;
-              <Tree tree={t.importClause} />
+              <Renderer tree={t.importClause} />
               &nbsp;
               <Keyword>from</Keyword>
             </>
           )}
           &nbsp;
-          <Tree tree={t.moduleSpecifier} />
+          <Renderer tree={t.moduleSpecifier} />
         </div>
       );
     }
@@ -880,13 +905,13 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       return (
         <div>
           {t.modifiers && <Modifiers modifiers={t.modifiers} />}
-          <Tree tree={t.declarationList} />
+          <Renderer tree={t.declarationList} />
           {t.decorators && (
             <div>
               {t.decorators.map((t, idx) => {
                 return (
                   <div key={idx}>
-                    <Tree tree={t.expression} />
+                    <Renderer tree={t.expression} />
                   </div>
                 );
               })}
@@ -908,15 +933,15 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const children = t.declarations.map((decl, idx) => {
         let initializer;
         if (decl.initializer) {
-          initializer = <Tree tree={decl.initializer} />;
+          initializer = <Renderer tree={decl.initializer} />;
         }
         return (
           <span key={idx}>
-            <Tree tree={decl.name} />
+            <Renderer tree={decl.name} />
             {decl.type && (
               <>
                 :&nbsp;
-                <Tree tree={decl.type} />
+                <Renderer tree={decl.type} />
               </>
             )}
             {initializer && <>&nbsp;=&nbsp;{initializer}</>}
@@ -940,7 +965,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
             <>
               &nbsp;
               {"("}
-              <Tree tree={t.expression} />
+              <Renderer tree={t.expression} />
               {")"}
             </>
           )}
@@ -952,11 +977,11 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.ParameterDeclaration;
       return (
         <>
-          {t.name && <Tree tree={t.name} />}
+          {t.name && <Renderer tree={t.name} />}
           {t.type && (
             <>
               :&nbsp;
-              <Tree tree={t.type} />
+              <Renderer tree={t.type} />
             </>
           )}
         </>
@@ -970,7 +995,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
             t.modifiers.map((mod, idx) => {
               return (
                 <span key={idx}>
-                  <Tree tree={mod} />
+                  <Renderer tree={mod} />
                   &nbsp;
                 </span>
               );
@@ -979,7 +1004,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
           {t.parameters.map((p, i) => {
             return (
               <span key={i}>
-                <Tree tree={p} key={i} />
+                <Renderer tree={p} key={i} />
                 {i !== t.parameters.length - 1 && ", "}
               </span>
             );
@@ -989,13 +1014,13 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
             <>
               {"{"}
               <IndentBlock>
-                <Tree tree={t.body} />
+                <Renderer tree={t.body} />
               </IndentBlock>
               {"}"}
             </>
           ) : (
             <IndentBlock>
-              <Tree tree={t.body} />
+              <Renderer tree={t.body} />
             </IndentBlock>
           )}
         </span>
@@ -1010,13 +1035,13 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
             const last = idx === t.parameters.length - 1;
             return (
               <span key={idx}>
-                <Tree tree={p} />
+                <Renderer tree={p} />
                 {!last && ", "}
               </span>
             );
           })}
           ){" => "}
-          <Tree tree={t.type} />
+          <Renderer tree={t.type} />
         </>
       );
     }
@@ -1027,9 +1052,9 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
           {t.modifiers && <Modifiers modifiers={t.modifiers} />}
           <Keyword>type</Keyword>
           &nbsp;
-          <Tree tree={t.name} />
+          <Renderer tree={t.name} />
           &nbsp;=&nbsp;
-          <Tree tree={t.type} />;
+          <Renderer tree={t.type} />;
         </div>
       );
     }
@@ -1041,7 +1066,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
           <Parameters parameters={t.parameters} />){" {"}
           {t.body && (
             <IndentBlock>
-              <Tree tree={t.body} />
+              <Renderer tree={t.body} />
             </IndentBlock>
           )}
           {"}"}
@@ -1056,7 +1081,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
           {t.name && (
             <>
               &nbsp;
-              <Tree tree={t.name} />
+              <Renderer tree={t.name} />
               {t.typeParameters && (
                 <TypeParameters typeParameters={t.typeParameters} />
               )}
@@ -1067,7 +1092,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
               {t.heritageClauses.map((h, idx) => {
                 return (
                   <span key={idx}>
-                    <Tree tree={h} />
+                    <Renderer tree={h} />
                   </span>
                 );
               })}
@@ -1080,7 +1105,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
               t.members.map((member, idx) => {
                 return (
                   <div key={idx}>
-                    <Tree tree={member} />
+                    <Renderer tree={member} />
                   </div>
                 );
               })}
@@ -1098,20 +1123,20 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
             t.modifiers.map((mod, idx) => {
               return (
                 <span key={idx}>
-                  <Tree tree={mod} />
+                  <Renderer tree={mod} />
                   &nbsp;
                 </span>
               );
             })}
           <Keyword>function</Keyword>&nbsp;
-          {t.name && <Tree tree={t.name} />}(
+          {t.name && <Renderer tree={t.name} />}(
           <IndentBlock>
             <Parameters parameters={t.parameters} />
           </IndentBlock>
           ) {"{"}
           {t.body && (
             <IndentBlock>
-              <Tree tree={t.body} />
+              <Renderer tree={t.body} />
             </IndentBlock>
           )}
           {"}"}
@@ -1125,12 +1150,12 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       return (
         <div>
           <Keyword>for</Keyword>&nbsp;(
-          <Tree tree={t.initializer} />
+          <Renderer tree={t.initializer} />
           &nbsp;of&nbsp;
-          <Tree tree={t.expression} />
+          <Renderer tree={t.expression} />
           )&nbsp;{"{"}
           <IndentBlock>
-            <Tree tree={t.statement} />
+            <Renderer tree={t.statement} />
           </IndentBlock>
           {"}"}
         </div>
@@ -1142,9 +1167,9 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       return (
         <div style={{ display: true ? "inline" : "block" }}>
           <Keyword>if</Keyword> (
-          <Tree tree={t.expression} />) {"{"}
+          <Renderer tree={t.expression} />) {"{"}
           <IndentBlock>
-            <Tree tree={t.thenStatement} />
+            <Renderer tree={t.thenStatement} />
           </IndentBlock>
           {t.elseStatement ? (
             <div>
@@ -1152,12 +1177,12 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
               <Keyword>else</Keyword>
               &nbsp;
               {t.elseStatement.kind === ts.SyntaxKind.IfStatement ? (
-                <Tree tree={t.elseStatement} />
+                <Renderer tree={t.elseStatement} />
               ) : (
                 <>
                   {"{"}
                   <IndentBlock>
-                    <Tree tree={t.elseStatement} />
+                    <Renderer tree={t.elseStatement} />
                   </IndentBlock>
                   {"}"}
                 </>
@@ -1174,7 +1199,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       return (
         <div>
           <Keyword>switch</Keyword> (
-          <Tree tree={t.expression} />) {"{"}
+          <Renderer tree={t.expression} />) {"{"}
           {t.caseBlock.clauses.map((clause, idx) => {
             if (clause.kind === ts.SyntaxKind.DefaultClause) {
               const c = clause as ts.DefaultClause;
@@ -1186,7 +1211,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
                     {"{"}
                     <IndentBlock>
                       {c.statements.map((stmt, idx) => {
-                        return <Tree tree={stmt} key={idx} />;
+                        return <Renderer tree={stmt} key={idx} />;
                       })}
                     </IndentBlock>
                     {"}"}
@@ -1200,7 +1225,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
                 <IndentBlock key={idx}>
                   <Keyword>case</Keyword>
                   &nbsp;
-                  <Tree tree={c.expression} />
+                  <Renderer tree={c.expression} />
                   {":"}
                   {c.statements.length > 0 && (
                     <>
@@ -1209,7 +1234,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
                           &nbsp;{"{"}
                           <IndentBlock>
                             {c.statements.map((stmt, idx) => {
-                              return <Tree tree={stmt} key={idx} />;
+                              return <Renderer tree={stmt} key={idx} />;
                             })}
                           </IndentBlock>
                           {"}"}
@@ -1218,7 +1243,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
                         <>
                           <IndentBlock>
                             {c.statements.map((stmt, idx) => {
-                              return <Tree tree={stmt} key={idx} />;
+                              return <Renderer tree={stmt} key={idx} />;
                             })}
                           </IndentBlock>
                         </>
@@ -1237,7 +1262,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
     case ts.SyntaxKind.LiteralType: {
       // const t = tree as ts.LiteralType;
       // @ts-ignore
-      return <Tree tree={tree.literal} />;
+      return <Renderer tree={tree.literal} />;
     }
     case ts.SyntaxKind.IntersectionType: {
       // @ts-ignore
@@ -1249,7 +1274,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
             return (
               <span key={idx}>
                 {/* @ts-ignore */}
-                <Tree tree={c} />
+                <Renderer tree={c} />
                 {!last && " & "}
               </span>
             );
@@ -1267,7 +1292,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
             return (
               <span key={idx}>
                 {/* @ts-ignore */}
-                <Tree tree={c} />
+                <Renderer tree={c} />
                 {!last && " | "}
               </span>
             );
@@ -1280,7 +1305,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.ParenthesizedType;
       return (
         <>
-          (<Tree tree={t.type} />)
+          (<Renderer tree={t.type} />)
         </>
       );
     }
@@ -1289,9 +1314,9 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as unknown as ts.QualifiedName;
       return (
         <>
-          <Tree tree={t.left} />
+          <Renderer tree={t.left} />
           .
-          <Tree tree={t.right} />
+          <Renderer tree={t.right} />
         </>
       );
     }
@@ -1300,17 +1325,17 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       return (
         <div>
           {t.modifiers && <Modifiers modifiers={t.modifiers} />}
-          <Tree tree={t.name} />
+          <Renderer tree={t.name} />
           {t.type && (
             <>
               :&nbsp;
-              <Tree tree={t.type} />
+              <Renderer tree={t.type} />
             </>
           )}
           {t.initializer && (
             <>
               =&nbsp;
-              <Tree tree={t.initializer} />
+              <Renderer tree={t.initializer} />
             </>
           )}
           ;
@@ -1322,13 +1347,13 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       return (
         <>
           {t.modifiers && <Modifiers modifiers={t.modifiers} />}
-          <Tree tree={t.name} />
+          <Renderer tree={t.name} />
           (
           <Parameters parameters={t.parameters} />)
           {t.type && (
             <>
               :&nbsp;
-              <Tree tree={t.type} />
+              <Renderer tree={t.type} />
             </>
           )}
         </>
@@ -1339,7 +1364,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.ArrayTypeNode;
       return (
         <>
-          <Tree tree={t.elementType} />
+          <Renderer tree={t.elementType} />
           []
         </>
       );
@@ -1354,7 +1379,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
             {t.members.map((member, idx) => {
               return (
                 <span key={idx}>
-                  <Tree tree={member} />
+                  <Renderer tree={member} />
                 </span>
               );
             })}
@@ -1368,7 +1393,7 @@ export function CodeRenderer({ tree }: { tree: ts.Node }) {
       const t = tree as ts.TypeReferenceNode;
       return (
         <>
-          <Tree tree={t.typeName} />
+          <Renderer tree={t.typeName} />
           {t.typeArguments && <TypeArguments typeArguments={t.typeArguments} />}
         </>
       );

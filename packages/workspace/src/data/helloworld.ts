@@ -1,4 +1,5 @@
 export const helloworld = `
+import x from "y";
 export const str = "string";
 export const num = 0;
 export const bool = true;
@@ -16,5 +17,32 @@ if (Math.random() > 0.5) {
   alert("hello");
 }
 
-
+const x = <div>x</div>;
 `;
+
+// import ts from "typescript";
+
+// export function replaceNode(source: ts.SourceFile) {
+//   function rewriter(): ts.TransformerFactory<ts.Node> {
+//     return (context) => {
+//       const visit: ts.Visitor = (node) => {
+//         // if (prev === node) return next;
+//         console.log("visit", node);
+
+//         return ts.visitEachChild(node, (child) => visit(child), context);
+//       };
+//       return (node) => ts.visitNode(node, visit);
+//     };
+//   }
+//   const result = ts.transform(source, [rewriter()]);
+//   const newAst = result.transformed[0] as ts.SourceFile;
+//   return newAst;
+// }
+
+// const source = ts.createSourceFile(
+//   "file:///helloworld.ts",
+//   helloworld,
+//   ts.ScriptTarget.ESNext
+// );
+
+// replaceNode(source);
