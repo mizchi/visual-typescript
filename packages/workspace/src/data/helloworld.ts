@@ -1,5 +1,21 @@
 export const helloworld = `
+if (Math.random() > 0.5) {
+  alert("hello");
+} else {
+  1;
+}
+
+class X {
+  constructor(public name: string) {
+  }
+  foo() {
+    
+  }
+}
 import x from "y";
+import { x, y, z as alpha } from "z";
+import * as c from "z";
+
 export const str = "string";
 export const num = 0;
 export const bool = true;

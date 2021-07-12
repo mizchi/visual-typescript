@@ -7,4 +7,8 @@ export {
   Literal,
 } from "./VisualTree";
 // export { EditableTree, EditableIdentifier } from "./EditableTree";
-export { parseCode, replaceNode, updateSource } from "./ast_helper";
+export {
+  parseToSource as parseCode,
+  replaceNode,
+  updateSource,
+} from "./ast_helper";

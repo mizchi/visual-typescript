@@ -1,67 +1,140 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import ts from "typescript";
 import { sourceToCode } from "../worker/typescript.worker";
 import { format } from "../worker/prettier.worker";
-import { Scrollable, HeaderContainer, Root, ContentContainer } from "./layout";
-import { TEMPLATES } from "../data";
-import { parseCode, replaceNode, updateSource } from "vistree";
-import { BlockTree } from "./BlockRenderer";
-import { Box } from "@chakra-ui/react";
+import { Scrollable, Root, ContentContainer } from "./layout";
+import { parseCode, replaceNode } from "vistree";
+import { EditableVisualTree } from "./VisualTree/VisualTree";
+import { Box, Textarea, VStack, Text } from "@chakra-ui/react";
 import { BlockSourceList } from "./BlockSourceList";
 
-// @ts-ignore
-const initialCode = TEMPLATES[Object.keys(TEMPLATES)[0]];
-const initialAst = parseCode(initialCode);
+function useReceivableValue(
+  initialValue: string
+): [
+  temp: string,
+  checkpoint: string,
+  setTemp: (v: string) => void,
+  setCheckpoint: (v: string) => void,
+  hasDiff: boolean
+] {
+  const [temp, setTemp] = useState<string>(initialValue);
+  const [lastReceived, setLastReceived] = useState<string>(initialValue);
 
-export function App() {
-  const [code, setCode] = useState<string>(initialCode);
-  const [ast, setAst] = useState<ts.SourceFile>(initialAst);
-  const onUpdateSource = useCallback(
-    async (newStatements: ts.Statement[]) => {
-      const newAst = updateSource(ast, newStatements);
-      setAst(newAst);
+  // to receive outer changes
+  const [checkpoint, setCheckpoint] = useState<string>(initialValue);
 
-      const newCode = await printCodeWithFormat(newAst);
-      setCode(newCode);
+  // detect initialCode changes
+  useEffect(() => {
+    if (initialValue !== lastReceived) {
+      setTemp(initialValue);
+      setLastReceived(initialValue);
+    }
+  }, [lastReceived, initialValue, setTemp]);
+
+  const setCheckpointWithTemp = useCallback(
+    (value: string) => {
+      setTemp(value);
+      setCheckpoint(value);
     },
-    [ast]
+    [setTemp]
+  );
+  const hasDiff = temp !== checkpoint;
+  return [temp, checkpoint, setTemp, setCheckpointWithTemp, hasDiff];
+}
+
+export function App(props: { initialCode: string }) {
+  const [
+    editingCode,
+    checkpointCode,
+    setEditingCode,
+    setCheckpointCode,
+    hasDiff,
+  ] = useReceivableValue(props.initialCode);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const [source, setSource] = useState<ts.SourceFile | null>(null);
+
+  // code => ast
+  useEffect(() => {
+    try {
+      const newSource = parseCode(editingCode);
+      setSource(newSource);
+      setCheckpointCode(editingCode);
+    } catch (e) {
+      setEditingCode(editingCode);
+      setErrorMessage(e?.message);
+    }
+  }, [editingCode]);
+
+  // update code
+  const onUpdateCode = useCallback(
+    async (newCode: string) => {
+      setEditingCode(newCode);
+    },
+    [setEditingCode]
   );
 
-  const onChangeNode = useCallback(
+  // update ast and code
+  const onUpdateNode = useCallback(
     async (prev: ts.Node, next: ts.Node) => {
-      const newAst = replaceNode(ast, prev, next);
-      setAst(newAst);
+      const newAst = replaceNode(source!, prev, next);
+      setSource(newAst);
       const newCode = await printCodeWithFormat(newAst);
-      setCode(newCode);
-      console.log(newCode);
+      setCheckpointCode(newCode);
     },
-    [ast]
+    [source]
   );
+
+  if (source == null) {
+    return <>...</>;
+  }
 
   return (
     <Root>
       <ContentContainer>
         <Box w="100%" h="100%" d="flex" flexDirection="row">
-          <Box w="200px" maxW="100%" height="100%" position="relative">
+          <Box
+            w="80px"
+            maxW="100%"
+            height="100%"
+            position="relative"
+            paddingLeft="10"
+          >
             <BlockSourceList />
           </Box>
           <Box flex={1} maxWidth="100%" height="100%" position="relative">
             <Scrollable>
               <Box padding={3}>
-                {/* <VisualTree ast={ast} /> */}
-                {/* <EditableTree
-                  ast={ast}
-                  onChangeNode={onChangeNode}
-                  onUpdateSource={onUpdateSource}
-                /> */}
-                <BlockTree
-                  ast={ast}
-                  onChangeNode={onChangeNode}
-                  onUpdateSource={onUpdateSource}
+                <EditableVisualTree
+                  source={source}
+                  onUpdateNode={onUpdateNode}
+                  // onUpdateSource={onUpdateSource}
                 />
               </Box>
             </Scrollable>
           </Box>
+          <VStack
+            flex={1}
+            maxWidth="100%"
+            height="100%"
+            position="relative"
+            overflow="hidden"
+          >
+            <Textarea
+              w="100%"
+              color="white"
+              value={editingCode}
+              height="100%"
+              onInput={(ev) => {
+                console.log("onupdate");
+                // @ts-ignore
+                onUpdateCode(ev.target.value);
+              }}
+            />
+            <Box height="100px">
+              {errorMessage && <Text>{errorMessage}</Text>}
+            </Box>
+          </VStack>
         </Box>
       </ContentContainer>
     </Root>

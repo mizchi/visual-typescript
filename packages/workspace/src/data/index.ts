@@ -3,5 +3,4 @@ import { helloworld } from "./helloworld";
 
 export const TEMPLATES = {
   "helloworld.ts": helloworld,
-  // "tree.tsx": tree,
 };
