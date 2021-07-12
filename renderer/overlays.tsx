@@ -25,7 +25,6 @@ export function ExpressionOverlay({
     const c = root.getFullText().slice(t.pos, t.end);
     comment = comment + c;
   });
-
   return (
     <Tooltip
       label={label + " " + comment}

@@ -9,6 +9,7 @@ import { useRenderer } from "../contexts";
 
 export function isExpression(node: ts.Node): node is ts.Expression {
   return (
+    ts.isLiteralExpression(node) ||
     ts.isBinaryExpression(node) ||
     ts.isCallExpression(node) ||
     ts.isPropertyAccessExpression(node) ||

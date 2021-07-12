@@ -25,7 +25,6 @@ export function isStatement(node: ts.Node): node is ts.Statement {
 }
 
 export function StatementRenderer({ node }: { node: ts.Statement }) {
-  const { root } = useTransformer();
   const Renderer = useRenderer();
 
   if (ts.isExpressionStatement(node)) {
@@ -75,6 +74,7 @@ export function StatementRenderer({ node }: { node: ts.Statement }) {
     );
   }
 
-  const code = node.getFullText(root);
-  return <>Unknown Statement: {code.slice(0, 10) + "..."}</>;
+  return <>Unknown Statement</>;
+  // const code = node.getFullText(root);
+  // return <>Unknown Statement: {code.slice(0, 10) + "..."}</>;
 }
