@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import ts from "typescript";
-import { sourceToCode } from "../worker/typescript.worker";
-import { format } from "../worker/prettier.worker";
 import { Scrollable, Root, ContentContainer } from "./layout";
-import { parse, replaceNode } from "../utils";
-import { EditableVisualTree } from "./VisualTree/VisualTree";
+import { parse, replaceNode, print } from "../utils";
+import {
+  EditableVisualTree,
+  BlockSourceList,
+} from "@visual-typescript/renderer";
 import { Box, Textarea, VStack, Text } from "@chakra-ui/react";
-import { BlockSourceList } from "./BlockSourceList";
 
 function useReceivableValue(
   initialValue: string
@@ -142,7 +142,7 @@ export function App(props: { initialCode: string }) {
 }
 
 async function printCodeWithFormat(ast: ts.SourceFile) {
-  const newCode = await sourceToCode(ast);
-  const newCodeFormatted = await format(newCode);
-  return newCodeFormatted;
+  const newCode = await print(ast);
+  // const newCodeFormatted = await format(newCode);
+  return newCode;
 }

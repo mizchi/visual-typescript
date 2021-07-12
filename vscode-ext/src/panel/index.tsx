@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { send, onMessage, start } from "./vscode_utils";
 import ts from "typescript";
-import { EditableVisualTree } from "../../../workspace/src/components/VisualTree/VisualTree";
+import { EditableVisualTree } from "@visual-typescript/renderer";
 
 const el = document.querySelector("#root") as HTMLElement;
 

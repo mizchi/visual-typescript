@@ -1,4 +1,7 @@
-# vistree
+# WIP
+
+---
+# visual-typescript
 
 Visual TypeScript Editing Environment.
 

@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "visual-workspace",
+  "name": "@visual-typescript/workbench",
   "version": "0.0.0",
   "main": "index.js",
   "license": "MIT",
