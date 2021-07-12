@@ -44,7 +44,7 @@ visual code editor infrastructure.
 ## Install
 
 ```bash
-npm install @mizchi/viztree typescript react react-dom styled-components --save
+npm install @mizchi/viztree typescript react react-dom
 ```
 
 ## Example

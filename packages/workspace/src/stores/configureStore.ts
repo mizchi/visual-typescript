@@ -1,8 +1,8 @@
-import { updateSource, replaceNode } from "vistree";
+import { replaceNode, parse } from "../utils";
 import ts from "typescript";
 import { createSlice, configureStore, PayloadAction } from "@reduxjs/toolkit";
 import { TEMPLATES } from "../data";
-import { parseCode } from "vistree";
+// import { parseCode } from "vistree";
 
 enum EditMode {
   CodeAndVisual = "code-and-visual",
@@ -12,7 +12,7 @@ enum EditMode {
 
 // @ts-ignore
 const initialCode = TEMPLATES[Object.keys(TEMPLATES)[0]];
-const initialAst = parseCode(initialCode);
+const initialAst = parse(initialCode);
 
 export type State = {
   mode: EditMode;
@@ -37,7 +37,7 @@ export const counter = createSlice({
       action: PayloadAction<{ prev: ts.Node; next: ts.Node }>
     ) {
       const newAst = replaceNode(
-        (state.ast as unknown) as ts.SourceFile,
+        state.ast as unknown as ts.SourceFile,
         action.payload.prev,
         action.payload.next
       );

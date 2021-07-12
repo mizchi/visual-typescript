@@ -3,7 +3,7 @@ import ts from "typescript";
 import { sourceToCode } from "../worker/typescript.worker";
 import { format } from "../worker/prettier.worker";
 import { Scrollable, Root, ContentContainer } from "./layout";
-import { parse, replaceNode } from "./utils";
+import { parse, replaceNode } from "../utils";
 import { EditableVisualTree } from "./VisualTree/VisualTree";
 import { Box, Textarea, VStack, Text } from "@chakra-ui/react";
 import { BlockSourceList } from "./BlockSourceList";
