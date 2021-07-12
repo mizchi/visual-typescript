@@ -1,6 +1,6 @@
 import ts from "typescript";
 
-export function parseToSource(value: string) {
+export function parse(value: string) {
   console.time("parse");
   const ret = ts.createSourceFile(
     "file:///index.ts",
@@ -11,13 +11,6 @@ export function parseToSource(value: string) {
   );
   console.timeEnd("parse");
   return ret;
-}
-
-export function updateSource(
-  ast: ts.SourceFile,
-  newStatements: ts.Statement[]
-) {
-  return ts.factory.updateSourceFile(ast, newStatements);
 }
 
 export function replaceNode(
