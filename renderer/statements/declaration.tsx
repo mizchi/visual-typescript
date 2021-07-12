@@ -1,6 +1,6 @@
 import React from "react";
 import ts from "typescript";
-import { useRendererContext } from "../contexts";
+import { useRenderer } from "../contexts";
 import { IndentBlock, Keyword, Modifiers, TypeParameters } from "../misc";
 
 export function InnterfaceDeclarationRenderer({
@@ -8,7 +8,7 @@ export function InnterfaceDeclarationRenderer({
 }: {
   node: ts.InterfaceDeclaration;
 }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   // TODO: extends
   return (
     <div>
@@ -53,7 +53,7 @@ export function VariableDeclarationListRenderer({
 }: {
   node: ts.VariableDeclarationList;
 }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   let declType;
   // TODO: Why 10?
   if (node.flags === ts.NodeFlags.Const || (node as any).flags === 10)

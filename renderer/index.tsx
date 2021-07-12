@@ -1,2 +1,2 @@
-export { VisualTree, EditableVisualTree } from "./nodes/VisualTree";
+export { VisualTree, EditableVisualTree } from "./RootRenderer";
 export { BlockSourceList } from "./BlockSourceList";

@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
 import ts from "typescript";
 import { Keyword, IndentBlock } from "../misc";
-import { useRendererContext } from "../contexts";
 import { Box } from "@chakra-ui/react";
+import { useRenderer } from "../contexts";
 
 export function IfStatementRenderer({ node }: { node: ts.IfStatement }) {
-  const { Renderer: Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <Box>
       <Keyword>if</Keyword> (
@@ -42,7 +42,7 @@ export function SwitchStatementRenderer({
 }: {
   node: ts.SwitchStatement;
 }) {
-  const { Renderer: Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <div>
       <Keyword>switch</Keyword> (

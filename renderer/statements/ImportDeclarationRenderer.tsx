@@ -1,7 +1,7 @@
 import { Box, Flex } from "@chakra-ui/react";
 import React from "react";
 import ts from "typescript";
-import { useRendererContext } from "../contexts";
+import { useRenderer } from "../contexts";
 import { Keyword } from "../misc";
 
 export function ImportDeclarationRenderer({
@@ -9,7 +9,7 @@ export function ImportDeclarationRenderer({
 }: {
   node: ts.ImportDeclaration;
 }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <Flex alignItems="flex-end">
       <Keyword>import</Keyword>
@@ -28,7 +28,7 @@ export function ImportDeclarationRenderer({
 }
 
 function ImportClauseRenderer({ node }: { node: ts.ImportClause }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <>
       {node.isTypeOnly && (
@@ -72,7 +72,7 @@ function ImportClauseRenderer({ node }: { node: ts.ImportClause }) {
 }
 
 function ImportSpecifierRenderer({ node }: { node: ts.ImportSpecifier }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <>
       {node.propertyName ? (

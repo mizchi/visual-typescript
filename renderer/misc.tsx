@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import React from "react";
 import ts from "typescript";
-import { useRendererContext } from "./contexts";
+import { useRenderer } from "./contexts";
 
 export const Keyword = styled.span`
   color: #569cd6;
@@ -16,7 +16,7 @@ export function IndentBlock(props: { children: any }) {
 }
 
 export function Modifiers(props: { modifiers: ts.ModifiersArray }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <>
       {props.modifiers.map((mod, idx) => {
@@ -55,7 +55,7 @@ export function UnknownDump(props: { tree: ts.Node }) {
 export function TypeArguments(props: {
   typeArguments: ts.NodeArray<ts.TypeNode>;
 }) {
-  const { Renderer: Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <>
       {"<"}
@@ -76,7 +76,7 @@ export function TypeArguments(props: {
 export function TypeParameters(props: {
   typeParameters: ts.NodeArray<ts.TypeParameterDeclaration>;
 }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
 
   return (
     <>
@@ -96,7 +96,7 @@ export function TypeParameters(props: {
 }
 
 export function Arguments(props: { arguments: ts.NodeArray<ts.Expression> }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
 
   return (
     <div>
@@ -116,7 +116,7 @@ export function Arguments(props: { arguments: ts.NodeArray<ts.Expression> }) {
 export function Parameters(props: {
   parameters: ts.NodeArray<ts.ParameterDeclaration>;
 }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   if (props.parameters.length === 0) {
     return <> </>;
   }

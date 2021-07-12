@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useCallback } from "react";
 import ts from "typescript";
-import { RendererContext, useRendererContext } from "./contexts";
+import { RendererProvider, useRenderer } from "./contexts";
 import {
   Arguments,
   Container,
@@ -20,30 +20,44 @@ import {
   isExpression,
 } from "./expressions/ExpressionRenderer";
 import { BlockRenderer } from "./statements/BlockRenderer";
+import {
+  useSyncedSource,
+  TransformerProvider,
+} from "@visual-typescript/transformer";
 
 export function EditableVisualTree(props: {
   source: ts.SourceFile;
-  onUpdateNode: (prev: ts.Node, next: ts.Node) => void;
+  onUpdate: (source: ts.SourceFile) => void;
 }) {
-  // TODO: Override
   const Renderer = VisualTree;
   return (
-    <RendererContext.Provider
-      value={{
-        Renderer,
-        root: props.source,
-        onUpdateNode: props.onUpdateNode,
-      }}
-    >
-      <Container>
-        <Renderer node={props.source} />
-      </Container>
-    </RendererContext.Provider>
+    <RendererProvider Renderer={VisualTree}>
+      <TransformerProvider source={props.source} onTransform={props.onUpdate}>
+        <Container>
+          <Renderer node={props.source} />
+        </Container>
+      </TransformerProvider>
+    </RendererProvider>
   );
 }
 
+// export function EditableVisualTree(props: {
+//   source: ts.SourceFile;
+//   onUpdateNode: (prev: ts.Node, next: ts.Node) => void;
+// }) {
+//   // TODO: Override
+//   const Renderer = VisualTree;
+//   return (
+//     <RendererProvider Renderer={Renderer}>
+//       <Container>
+//         <Renderer node={props.source} />
+//       </Container>
+//     </RendererProvider>
+//   );
+// }
+
 export function VisualTree({ node }: { node: ts.Node }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   if (node == null) {
     return <>unknown</>;
   }
@@ -504,7 +518,7 @@ export function VisualTree({ node }: { node: ts.Node }) {
     return <KeywordRenderer node={node} />;
   }
 
-  return <>unnown</>;
+  return <>unknown</>;
   // default: {
   //   return (
   //     <span style={{ color: "red" }}>

@@ -1,6 +1,6 @@
 import React from "react";
 import ts from "typescript";
-import { useRendererContext } from "../contexts";
+import { useRenderer } from "../contexts";
 import { IndentBlock, Keyword, Parameters, TypeParameters } from "../misc";
 import { BlockRenderer } from "../statements/BlockRenderer";
 import { IdentifierRenderer } from "./IdentifierRenderer";
@@ -10,7 +10,7 @@ export function ClassDeclarationRenderer({
 }: {
   node: ts.ClassDeclaration;
 }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <div>
       <Keyword>class</Keyword>
@@ -55,7 +55,7 @@ export function ClassDeclarationRenderer({
 }
 
 function HeritageClauseRenderer({ node }: { node: ts.HeritageClause }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <>
       &nbsp;

@@ -1,7 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import React from "react";
 import ts from "typescript";
-import { useRendererContext } from "../contexts";
+import { useRenderer } from "../contexts";
 import { Keyword, Modifiers } from "../misc";
 import { VariableDeclarationListRenderer } from "./declaration";
 
@@ -10,7 +10,7 @@ export function VariableStatementRenderer({
 }: {
   node: ts.VariableStatement;
 }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <Box display="flex" alignItems="flex-end">
       {node.modifiers && <Modifiers modifiers={node.modifiers} />}

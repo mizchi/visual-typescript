@@ -1,6 +1,6 @@
 import React from "react";
 import ts from "typescript";
-import { useRendererContext } from "../contexts";
+import { useRenderer } from "../contexts";
 import { IndentBlock, Keyword, Modifiers, Parameters } from "../misc";
 
 export function ArrowFunctionExpressionRenderer({
@@ -8,7 +8,7 @@ export function ArrowFunctionExpressionRenderer({
 }: {
   node: ts.ArrowFunction;
 }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <span>
       {node.modifiers && <Modifiers modifiers={node.modifiers} />}

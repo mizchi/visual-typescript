@@ -1,9 +1,9 @@
 import { Box, Flex, Icon } from "@chakra-ui/react";
 import React from "react";
 import ts from "typescript";
-import { useRendererContext } from "./contexts";
 import { Tooltip } from "@chakra-ui/react";
 import { RiDragMoveLine } from "react-icons/ri";
+import { useTransformer } from "../transformer";
 
 export function ExpressionOverlay({
   node,
@@ -15,7 +15,7 @@ export function ExpressionOverlay({
   showDetail?: boolean;
 }) {
   const label = ts.SyntaxKind[node.kind];
-  const { root } = useRendererContext();
+  const { root } = useTransformer();
   const ranges = ts.getLeadingCommentRanges(
     root.getFullText(),
     node.getFullStart()

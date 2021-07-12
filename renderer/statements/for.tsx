@@ -1,11 +1,11 @@
 import React from "react";
 import ts from "typescript";
-import { useRendererContext } from "../contexts";
+import { useRenderer } from "../contexts";
 import { IndentBlock, Keyword } from "../misc";
 import { VariableDeclarationListRenderer } from "./declaration";
 
 export function ForOfStatementRenderer({ node }: { node: ts.ForOfStatement }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <div>
       <Keyword>for</Keyword>&nbsp;(
@@ -22,12 +22,12 @@ export function ForOfStatementRenderer({ node }: { node: ts.ForOfStatement }) {
 }
 // TODO
 export function ForInStatementRenderer({ node }: { node: ts.ForInStatement }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return <div>{"// (empty)"}</div>;
 }
 
 export function ForInitializerRenderer({ node }: { node: ts.ForInitializer }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   if (ts.isVariableDeclarationList(node)) {
     return <VariableDeclarationListRenderer node={node} />;
   }

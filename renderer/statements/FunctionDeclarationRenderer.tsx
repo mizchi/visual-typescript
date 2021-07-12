@@ -1,15 +1,15 @@
 import React from "react";
 import ts from "typescript";
-import { useRendererContext } from "../contexts";
 import { IndentBlock, Keyword, Parameters } from "../misc";
 import { IdentifierRenderer } from "../expressions/IdentifierRenderer";
+import { useRenderer } from "../contexts";
 
 export function FunctionDeclarationRenderer({
   node,
 }: {
   node: ts.FunctionDeclaration;
 }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <div>
       {node.modifiers &&

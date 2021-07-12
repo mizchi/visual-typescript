@@ -1,6 +1,5 @@
 import React from "react";
 import ts from "typescript";
-import { useRendererContext } from "../contexts";
 import { EmptyStatementRenderer } from "./EmptyStatementRenderer";
 import { IfStatementRenderer, SwitchStatementRenderer } from "./logics";
 import { ImportDeclarationRenderer } from "./ImportDeclarationRenderer";
@@ -8,6 +7,8 @@ import { VariableStatementRenderer } from "./VariableStatementRenderer";
 import { Keyword } from "../misc";
 import { FunctionDeclarationRenderer } from "./FunctionDeclarationRenderer";
 import { ClassDeclarationRenderer } from "../expressions/class";
+import { useRenderer } from "../contexts";
+import { useTransformer } from "../../transformer";
 
 export function isStatement(node: ts.Node): node is ts.Statement {
   return (
@@ -24,7 +25,8 @@ export function isStatement(node: ts.Node): node is ts.Statement {
 }
 
 export function StatementRenderer({ node }: { node: ts.Statement }) {
-  const { Renderer, root } = useRendererContext();
+  const { root } = useTransformer();
+  const Renderer = useRenderer();
 
   if (ts.isExpressionStatement(node)) {
     return (

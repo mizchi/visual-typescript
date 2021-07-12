@@ -1,7 +1,7 @@
 import React from "react";
 import ts from "typescript";
-import { useRendererContext } from "../contexts";
 import AutosizeInput from "react-input-autosize";
+import { useTransformer } from "../../transformer";
 
 export function IdentifierRenderer({
   node,
@@ -10,7 +10,7 @@ export function IdentifierRenderer({
   node: ts.Identifier;
   editable?: boolean;
 }) {
-  const { onUpdateNode } = useRendererContext();
+  const { replace } = useTransformer();
   return (
     <AutosizeInput
       inputStyle={{
@@ -25,7 +25,7 @@ export function IdentifierRenderer({
       }}
       value={node.text}
       onChange={(e) => {
-        onUpdateNode(node, ts.factory.createIdentifier(e.target.value));
+        replace(node, ts.factory.createIdentifier(e.target.value));
       }}
     />
   );

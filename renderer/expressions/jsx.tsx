@@ -1,6 +1,6 @@
 import React from "react";
 import ts from "typescript";
-import { useRendererContext } from "../contexts";
+import { useRenderer } from "../contexts";
 import { IndentBlock } from "../misc";
 
 export function isJsxRendererNode(node: ts.Node): node is ts.JsxChild {
@@ -54,7 +54,7 @@ export function JsxElementRenderer({ node }: { node: ts.JsxElement }) {
 }
 
 function JsxExpressionRenderer({ node }: { node: ts.JsxExpression }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <>
       {"{"}
@@ -65,12 +65,12 @@ function JsxExpressionRenderer({ node }: { node: ts.JsxExpression }) {
 }
 
 function JsxTextRenderer({ node }: { node: ts.JsxText }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return <>{node.text}</>;
 }
 
 function JsxFragmentRenderer({ node }: { node: ts.JsxFragment }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
 
   return (
     <>
@@ -90,7 +90,7 @@ function JsxFragmentRenderer({ node }: { node: ts.JsxFragment }) {
 }
 
 function JsxAttributesRenderer({ node }: { node: ts.JsxAttributes }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <>
       {node.properties.map((attr, idx) => {
@@ -155,7 +155,7 @@ function JsxClosingElementRenderer({ node }: { node: ts.JsxClosingElement }) {
   );
 }
 function JsxTagNameRenderer({ node }: { node: ts.JsxTagNameExpression }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   if (ts.isIdentifier(node)) {
     return <Renderer node={node} />;
   }

@@ -1,90 +1,16 @@
 import React, { useCallback, useEffect, useState } from "react";
-import ts from "typescript";
 import { Scrollable, Root, ContentContainer } from "./layout";
-import { parse, replaceNode, print } from "../utils";
 import {
   EditableVisualTree,
   BlockSourceList,
 } from "@visual-typescript/renderer";
-import { Box, Textarea, VStack, Text } from "@chakra-ui/react";
-
-function useReceivableValue(
-  initialValue: string
-): [
-  temp: string,
-  checkpoint: string,
-  setTemp: (v: string) => void,
-  setCheckpoint: (v: string) => void,
-  hasDiff: boolean
-] {
-  const [temp, setTemp] = useState<string>(initialValue);
-  const [lastReceived, setLastReceived] = useState<string>(initialValue);
-
-  // to receive outer changes
-  const [checkpoint, setCheckpoint] = useState<string>(initialValue);
-
-  // detect initialCode changes
-  useEffect(() => {
-    if (initialValue !== lastReceived) {
-      setTemp(initialValue);
-      setLastReceived(initialValue);
-    }
-  }, [lastReceived, initialValue, setTemp]);
-
-  const setCheckpointWithTemp = useCallback(
-    (value: string) => {
-      setTemp(value);
-      setCheckpoint(value);
-    },
-    [setTemp]
-  );
-  const hasDiff = temp !== checkpoint;
-  return [temp, checkpoint, setTemp, setCheckpointWithTemp, hasDiff];
-}
+import { Box, Textarea, VStack } from "@chakra-ui/react";
+import { useSyncedSource } from "@visual-typescript/transformer";
 
 export function App(props: { initialCode: string }) {
-  const [
-    editingCode,
-    checkpointCode,
-    setEditingCode,
-    setCheckpointCode,
-    hasDiff,
-  ] = useReceivableValue(props.initialCode);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const [source, setSource] = useState<ts.SourceFile | null>(null);
-
-  // code => ast
-  useEffect(() => {
-    try {
-      const newSource = parse(editingCode);
-      setSource(newSource);
-      setCheckpointCode(editingCode);
-    } catch (e) {
-      setEditingCode(editingCode);
-      setErrorMessage(e?.message);
-    }
-  }, [editingCode]);
-
-  // update code
-  const onUpdateCode = useCallback(
-    async (newCode: string) => {
-      setEditingCode(newCode);
-    },
-    [setEditingCode]
+  const { source, setSource, code, setCode } = useSyncedSource(
+    props.initialCode
   );
-
-  // update ast and code
-  const onUpdateNode = useCallback(
-    async (prev: ts.Node, next: ts.Node) => {
-      const newAst = replaceNode(source!, prev, next);
-      setSource(newAst);
-      const newCode = await printCodeWithFormat(newAst);
-      setCheckpointCode(newCode);
-    },
-    [source]
-  );
-
   if (source == null) {
     return <>...</>;
   }
@@ -105,11 +31,7 @@ export function App(props: { initialCode: string }) {
           <Box flex={1} maxWidth="100%" height="100%" position="relative">
             <Scrollable>
               <Box padding={3}>
-                <EditableVisualTree
-                  source={source}
-                  onUpdateNode={onUpdateNode}
-                  // onUpdateSource={onUpdateSource}
-                />
+                <EditableVisualTree source={source} onUpdate={setSource} />
               </Box>
             </Scrollable>
           </Box>
@@ -123,26 +45,20 @@ export function App(props: { initialCode: string }) {
             <Textarea
               w="100%"
               color="white"
-              value={editingCode}
+              value={code}
               height="100%"
               onInput={(ev) => {
-                console.log("onupdate");
                 // @ts-ignore
-                onUpdateCode(ev.target.value);
+                const value: string = ev.target.value;
+                setCode(value);
               }}
             />
-            <Box height="100px">
+            {/* <Box height="100px">
               {errorMessage && <Text>{errorMessage}</Text>}
-            </Box>
+            </Box> */}
           </VStack>
         </Box>
       </ContentContainer>
     </Root>
   );
-}
-
-async function printCodeWithFormat(ast: ts.SourceFile) {
-  const newCode = await print(ast);
-  // const newCodeFormatted = await format(newCode);
-  return newCode;
 }

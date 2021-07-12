@@ -1,11 +1,11 @@
 import React from "react";
 import ts from "typescript";
-import { useRendererContext } from "../contexts";
 import { Arguments, IndentBlock, Literal, TypeArguments } from "../misc";
 import { ArrowFunctionExpressionRenderer } from "./function";
 import { IdentifierRenderer } from "./IdentifierRenderer";
 import { ExpressionOverlay } from "../overlays";
 import { Box } from "@chakra-ui/react";
+import { useRenderer } from "../contexts";
 
 export function isExpression(node: ts.Node): node is ts.Expression {
   return (
@@ -31,7 +31,7 @@ export function ExpressionRenderer({ node }: { node: ts.Expression }) {
 }
 
 function _ExpressionRendererImpl({ node }: { node: ts.Expression }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
 
   if (ts.isBinaryExpression(node)) {
     return (
@@ -121,7 +121,7 @@ function ObjectLiteralExpressionRenderer({
 }: {
   node: ts.ObjectLiteralExpression;
 }) {
-  const { Renderer } = useRendererContext();
+  const Renderer = useRenderer();
   return (
     <>
       {"{"}
